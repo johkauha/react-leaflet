@@ -21,6 +21,7 @@ export type {
 export { default as AttributionControl } from './AttributionControl'
 export { default as Circle } from './Circle'
 export { default as CircleMarker } from './CircleMarker'
+export { default as Semicircle } from './Semicircle'
 export { default as DivOverlay } from './DivOverlay'
 export { default as FeatureGroup } from './FeatureGroup'
 export { default as GeoJSON } from './GeoJSON'
