@@ -2,14 +2,9 @@
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('react-dom'), require('react'), require('leaflet')) :
 	typeof define === 'function' && define.amd ? define(['exports', 'react-dom', 'react', 'leaflet'], factory) :
 	(factory((global.ReactLeaflet = {}),global.ReactDOM,global.React,global.L));
-}(this, (function (exports,reactDom,React,leaflet) { 'use strict';
+}(this, (function (exports,reactDom,React,L) { 'use strict';
 
 	var React__default = 'default' in React ? React['default'] : React;
-	var leaflet__default = 'default' in leaflet ? leaflet['default'] : leaflet;
-
-	function commonjsRequire () {
-		throw new Error('Dynamic requires are not currently supported by rollup-plugin-commonjs');
-	}
 
 	function unwrapExports (x) {
 		return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x.default : x;
@@ -362,9 +357,9 @@
 	var LeafletProvider = Provider;
 	var withLeaflet = function withLeaflet(WrappedComponent) {
 	  var WithLeafletComponent = function WithLeafletComponent(props, ref) {
-	    return React__default.createElement(Consumer, null, function (leaflet$$1) {
+	    return React__default.createElement(Consumer, null, function (leaflet) {
 	      return React__default.createElement(WrappedComponent, _extends_1({}, props, {
-	        leaflet: leaflet$$1,
+	        leaflet: leaflet,
 	        ref: ref
 	      }));
 	    });
@@ -571,7 +566,7 @@
 	  createClass(AttributionControl, [{
 	    key: "createLeafletElement",
 	    value: function createLeafletElement(props) {
-	      return new leaflet.Control.Attribution(props);
+	      return new L.Control.Attribution(props);
 	    }
 	  }]);
 
@@ -3892,7 +3887,7 @@
 	          radius = props.radius,
 	          options = objectWithoutProperties(props, ["center", "radius"]);
 
-	      return new leaflet.Circle(center, radius, this.getOptions(options));
+	      return new L.Circle(center, radius, this.getOptions(options));
 	    }
 	  }, {
 	    key: "updateLeafletElement",
@@ -3926,7 +3921,7 @@
 	  createClass(CircleMarker, [{
 	    key: "createLeafletElement",
 	    value: function createLeafletElement(props) {
-	      var el = new leaflet.CircleMarker(props.center, this.getOptions(props));
+	      var el = new L.CircleMarker(props.center, this.getOptions(props));
 	      this.contextValue = objectSpread({}, props.leaflet, {
 	        popupContainer: el
 	      });
@@ -3950,218 +3945,20 @@
 
 	var CircleMarker$1 = withLeaflet(CircleMarker);
 
-	var Semicircle = createCommonjsModule(function (module) {
-	/**
-	 * Semicircle extension for L.Circle.
-	 * Jan Pieter Waagmeester <jieter@jieter.nl>
-	 *
-	 * This version is tested with leaflet 1.0.2
-	 */
-	(function (factory) {
-	    if (typeof commonjsRequire !== 'undefined') {
-	        // Node/CommonJS
-	        module.exports = factory(leaflet__default);
-	    } else {
-	        // Browser globals
-	        if (typeof window.L === 'undefined') {
-	            throw 'Leaflet must be loaded first';
-	        }
-	        factory(window.L);
-	    }
-	})(function (L) {
-	    var DEG_TO_RAD = Math.PI / 180;
+	require('leaflet-semicircle');
 
-	    // make sure 0 degrees is up (North) and convert to radians.
-	    function fixAngle (angle) {
-	        return (angle - 90) * DEG_TO_RAD;
-	    }
-
-	    // rotate point [x + r, y+r] around [x, y] by `angle` radians.
-	    function rotated (p, angle, r) {
-	        return p.add(
-	            L.point(Math.cos(angle), Math.sin(angle)).multiplyBy(r)
-	        );
-	    }
-
-	    L.Point.prototype.rotated = function (angle, r) {
-	        return rotated(this, angle, r);
-	    };
-
-	    var semicircle = {
-	        options: {
-	            startAngle: 0,
-	            stopAngle: 359.9999
-	        },
-
-	        startAngle: function () {
-	            if (this.options.startAngle < this.options.stopAngle) {
-	                return fixAngle(this.options.startAngle);
-	            } else {
-	                return fixAngle(this.options.stopAngle);
-	            }
-	        },
-	        stopAngle: function () {
-	            if (this.options.startAngle < this.options.stopAngle) {
-	                return fixAngle(this.options.stopAngle);
-	            } else {
-	                return fixAngle(this.options.startAngle);
-	            }
-	        },
-
-	        setStartAngle: function (angle) {
-	            this.options.startAngle = angle;
-	            return this.redraw();
-	        },
-
-	        setStopAngle: function (angle) {
-	            this.options.stopAngle = angle;
-	            return this.redraw();
-	        },
-
-	        setDirection: function (direction, degrees) {
-	            if (degrees === undefined) {
-	                degrees = 10;
-	            }
-	            this.options.startAngle = direction - (degrees / 2);
-	            this.options.stopAngle = direction + (degrees / 2);
-
-	            return this.redraw();
-	        },
-	        getDirection: function () {
-	            return this.stopAngle() - (this.stopAngle() - this.startAngle()) / 2;
-	        },
-
-	        isSemicircle: function () {
-	            var startAngle = this.options.startAngle,
-	                stopAngle = this.options.stopAngle;
-
-	            return (
-	                !(startAngle === 0 && stopAngle > 359) &&
-	                !(startAngle == stopAngle)
-	            );
-	        },
-	        _containsPoint: function (p) {
-	            function normalize (angle) {
-	                while (angle <= -Math.PI) {
-	                    angle += 2.0 * Math.PI;
-	                }
-	                while (angle > Math.PI) {
-	                    angle -= 2.0 * Math.PI;
-	                }
-	                return angle;
-	            }
-	            var angle = Math.atan2(p.y - this._point.y, p.x - this._point.x);
-	            var nStart = normalize(this.startAngle());
-	            var nStop = normalize(this.stopAngle());
-	            if (nStop <= nStart) {
-	                nStop += 2.0 * Math.PI;
-	            }
-	            if (angle <= nStart) {
-	                angle += 2.0 * Math.PI;
-	            }
-	            return (
-	                nStart < angle && angle <= nStop &&
-	                p.distanceTo(this._point) <= this._radius + this._clickTolerance()
-	            );
-	        }
-	    };
-
-	    L.SemiCircle = L.Circle.extend(semicircle);
-	    L.SemiCircleMarker = L.CircleMarker.extend(semicircle);
-
-	    L.semiCircle = function (latlng, options) {
-	        return new L.SemiCircle(latlng, options);
-	    };
-	    L.semiCircleMarker = function (latlng, options) {
-	        return new L.SemiCircleMarker(latlng, options);
-	    };
-
-	    var _updateCircleSVG = L.SVG.prototype._updateCircle;
-	    var _updateCircleCanvas = L.Canvas.prototype._updateCircle;
-
-	    L.SVG.include({
-	        _updateCircle: function (layer) {
-	            // If we want a circle, we use the original function
-	            if (!(layer instanceof L.SemiCircle || layer instanceof L.SemiCircleMarker) ||
-	                !layer.isSemicircle()) {
-	                return _updateCircleSVG.call(this, layer);
-	            }
-	            if (layer._empty()) {
-	                return this._setPath(layer, 'M0 0');
-	            }
-
-	            var p = layer._map.latLngToLayerPoint(layer._latlng),
-	                r = layer._radius,
-	                r2 = Math.round(layer._radiusY || r),
-	                start = p.rotated(layer.startAngle(), r),
-	                end = p.rotated(layer.stopAngle(), r);
-
-	            var largeArc = (layer.options.stopAngle - layer.options.startAngle >= 180) ? '1' : '0';
-
-	            var d = 'M' + p.x + ',' + p.y +
-	                // line to first start point
-	                'L' + start.x + ',' + start.y +
-	                'A ' + r + ',' + r2 + ',0,' + largeArc + ',1,' + end.x + ',' + end.y +
-	                ' z';
-
-	            this._setPath(layer, d);
-	        }
-	    });
-
-	    L.Canvas.include({
-	        _updateCircle: function (layer) {
-	            // If we want a circle, we use the original function
-	            if (!(layer instanceof L.SemiCircle || layer instanceof L.SemiCircleMarker) ||
-	                !layer.isSemicircle()) {
-	                return _updateCircleCanvas.call(this, layer);
-	            }
-
-	            var p = layer._point,
-	                ctx = this._ctx,
-	                r = layer._radius,
-	                s = (layer._radiusY || r) / r,
-	                start = p.rotated(layer.startAngle(), r);
-
-	            this._drawnLayers[layer._leaflet_id] = layer;
-
-	            if (s !== 1) {
-	                ctx.save();
-	                ctx.scale(1, s);
-	            }
-
-	            ctx.beginPath();
-	            ctx.moveTo(p.x, p.y);
-	            ctx.lineTo(start.x, start.y);
-	            ctx.arc(p.x, p.y, r, layer.startAngle(), layer.stopAngle());
-	            ctx.lineTo(p.x, p.y);
-
-	            if (s !== 1) {
-	                ctx.restore();
-	            }
-
-	            this._fillStroke(ctx, layer);
-	        }
-	    });
-	});
-	});
-
-	var LeafletSemicircle = /*#__PURE__*/Object.freeze({
-		default: Semicircle,
-		__moduleExports: Semicircle
-	});
-
-	var Semicircle$1 =
+	var Semicircle =
 	/*#__PURE__*/
 	function (_Path) {
-	  inherits(Semicircle$$1, _Path);
+	  inherits(Semicircle, _Path);
 
-	  function Semicircle$$1() {
-	    classCallCheck(this, Semicircle$$1);
+	  function Semicircle() {
+	    classCallCheck(this, Semicircle);
 
-	    return possibleConstructorReturn(this, getPrototypeOf$1(Semicircle$$1).apply(this, arguments));
+	    return possibleConstructorReturn(this, getPrototypeOf$1(Semicircle).apply(this, arguments));
 	  }
 
-	  createClass(Semicircle$$1, [{
+	  createClass(Semicircle, [{
 	    key: "createLeafletElement",
 	    value: function createLeafletElement(props) {
 	      var center = props.center,
@@ -4170,7 +3967,7 @@
 	          stopAngle = props.stopAngle,
 	          options = objectWithoutProperties(props, ["center", "radius", "startAngle", "stopAngle"]);
 
-	      return new LeafletSemicircle(center, radius, startAngle, stopAngle, this.getOptions(options));
+	      return new L.semiCircle(center, radius, startAngle, stopAngle, this.getOptions(options));
 	    }
 	  }, {
 	    key: "updateLeafletElement",
@@ -4185,10 +3982,10 @@
 	    }
 	  }]);
 
-	  return Semicircle$$1;
+	  return Semicircle;
 	}(Path);
 
-	var Semicircle$2 = withLeaflet(Semicircle$1);
+	var Semicircle$1 = withLeaflet(Semicircle);
 
 	var splitClassName = function splitClassName() {
 	  var className = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
@@ -4197,12 +3994,12 @@
 
 	var addClassName = function addClassName(container, className) {
 	  splitClassName(className).forEach(function (cls) {
-	    leaflet.DomUtil.addClass(container, cls);
+	    L.DomUtil.addClass(container, cls);
 	  });
 	};
 	var removeClassName = function removeClassName(container, className) {
 	  splitClassName(className).forEach(function (cls) {
-	    leaflet.DomUtil.removeClass(container, cls);
+	    L.DomUtil.removeClass(container, cls);
 	  });
 	};
 	var updateClassName = (function (container, prevClassName, nextClassName) {
@@ -4298,7 +4095,7 @@
 	  createClass(FeatureGroup, [{
 	    key: "createLeafletElement",
 	    value: function createLeafletElement(props) {
-	      var el = new leaflet.FeatureGroup(this.getOptions(props));
+	      var el = new L.FeatureGroup(this.getOptions(props));
 	      this.contextValue = objectSpread({}, props.leaflet, {
 	        layerContainer: el,
 	        popupContainer: el
@@ -4333,7 +4130,7 @@
 	  createClass(GeoJSON, [{
 	    key: "createLeafletElement",
 	    value: function createLeafletElement(props) {
-	      return new leaflet.GeoJSON(props.data, this.getOptions(props));
+	      return new L.GeoJSON(props.data, this.getOptions(props));
 	    }
 	  }, {
 	    key: "updateLeafletElement",
@@ -4365,7 +4162,7 @@
 	  createClass(GridLayer, [{
 	    key: "createLeafletElement",
 	    value: function createLeafletElement(props) {
-	      return new leaflet.GridLayer(this.getOptions(props));
+	      return new L.GridLayer(this.getOptions(props));
 	    }
 	  }, {
 	    key: "updateLeafletElement",
@@ -4416,7 +4213,7 @@
 	  createClass(ImageOverlay, [{
 	    key: "createLeafletElement",
 	    value: function createLeafletElement(props) {
-	      var el = new leaflet.ImageOverlay(props.url, props.bounds, this.getOptions(props));
+	      var el = new L.ImageOverlay(props.url, props.bounds, this.getOptions(props));
 	      this.contextValue = objectSpread({}, props.leaflet, {
 	        popupContainer: el
 	      });
@@ -4430,7 +4227,7 @@
 	      }
 
 	      if (toProps.bounds !== fromProps.bounds) {
-	        this.leafletElement.setBounds(leaflet.latLngBounds(toProps.bounds));
+	        this.leafletElement.setBounds(L.latLngBounds(toProps.bounds));
 	      }
 
 	      if (toProps.opacity !== fromProps.opacity) {
@@ -4462,7 +4259,7 @@
 	  createClass(LayerGroup, [{
 	    key: "createLeafletElement",
 	    value: function createLeafletElement(props) {
-	      var el = new leaflet.LayerGroup(this.getOptions(props));
+	      var el = new L.LayerGroup(this.getOptions(props));
 	      this.contextValue = objectSpread({}, props.leaflet, {
 	        layerContainer: el
 	      });
@@ -4643,7 +4440,7 @@
 	      var _children = props.children,
 	          options = objectWithoutProperties(props, ["children"]);
 
-	      return new leaflet.Control.Layers(undefined, undefined, options);
+	      return new L.Control.Layers(undefined, undefined, options);
 	    }
 	  }, {
 	    key: "updateLeafletElement",
@@ -5656,7 +5453,7 @@
 	        }
 	      }
 
-	      return new leaflet.Map(this.container, options);
+	      return new L.Map(this.container, options);
 	    }
 	  }, {
 	    key: "updateLeafletElement",
@@ -5842,7 +5639,7 @@
 	  }, {
 	    key: "shouldUpdateBounds",
 	    value: function shouldUpdateBounds(next, prev) {
-	      return prev ? !leaflet.latLngBounds(next).equals(leaflet.latLngBounds(prev)) : true;
+	      return prev ? !L.latLngBounds(next).equals(L.latLngBounds(prev)) : true;
 	    }
 	  }, {
 	    key: "render",
@@ -5875,7 +5672,7 @@
 	  createClass(Marker, [{
 	    key: "createLeafletElement",
 	    value: function createLeafletElement(props) {
-	      var el = new leaflet.Marker(props.position, this.getOptions(props));
+	      var el = new L.Marker(props.position, this.getOptions(props));
 	      this.contextValue = objectSpread({}, props.leaflet, {
 	        popupContainer: el
 	      });
@@ -6185,7 +5982,7 @@
 	  createClass(Polygon, [{
 	    key: "createLeafletElement",
 	    value: function createLeafletElement(props) {
-	      return new leaflet.Polygon(props.positions, this.getOptions(props));
+	      return new L.Polygon(props.positions, this.getOptions(props));
 	    }
 	  }, {
 	    key: "updateLeafletElement",
@@ -6217,7 +6014,7 @@
 	  createClass(Polyline, [{
 	    key: "createLeafletElement",
 	    value: function createLeafletElement(props) {
-	      return new leaflet.Polyline(props.positions, this.getOptions(props));
+	      return new L.Polyline(props.positions, this.getOptions(props));
 	    }
 	  }, {
 	    key: "updateLeafletElement",
@@ -6294,7 +6091,7 @@
 	    value: function createLeafletElement(props) {
 	      var options = this.getOptions(props);
 	      options.autoPan = props.autoPan !== false;
-	      return new leaflet.Popup(options, props.leaflet.popupContainer);
+	      return new L.Popup(options, props.leaflet.popupContainer);
 	    }
 	  }, {
 	    key: "updateLeafletElement",
@@ -6371,7 +6168,7 @@
 	  createClass(Rectangle, [{
 	    key: "createLeafletElement",
 	    value: function createLeafletElement(props) {
-	      return new leaflet.Rectangle(props.bounds, this.getOptions(props));
+	      return new L.Rectangle(props.bounds, this.getOptions(props));
 	    }
 	  }, {
 	    key: "updateLeafletElement",
@@ -6403,7 +6200,7 @@
 	  createClass(ScaleControl, [{
 	    key: "createLeafletElement",
 	    value: function createLeafletElement(props) {
-	      return new leaflet.Control.Scale(props);
+	      return new L.Control.Scale(props);
 	    }
 	  }]);
 
@@ -6426,7 +6223,7 @@
 	  createClass(TileLayer, [{
 	    key: "createLeafletElement",
 	    value: function createLeafletElement(props) {
-	      return new leaflet.TileLayer(props.url, this.getOptions(props));
+	      return new L.TileLayer(props.url, this.getOptions(props));
 	    }
 	  }, {
 	    key: "updateLeafletElement",
@@ -6484,7 +6281,7 @@
 	  createClass(Tooltip, [{
 	    key: "createLeafletElement",
 	    value: function createLeafletElement(props) {
-	      return new leaflet.Tooltip(this.getOptions(props), props.leaflet.popupContainer);
+	      return new L.Tooltip(this.getOptions(props), props.leaflet.popupContainer);
 	    }
 	  }, {
 	    key: "componentDidMount",
@@ -6536,7 +6333,7 @@
 	  createClass(VideoOverlay, [{
 	    key: "createLeafletElement",
 	    value: function createLeafletElement(props) {
-	      return new leaflet.VideoOverlay(props.url, props.bounds, this.getOptions(props));
+	      return new L.VideoOverlay(props.url, props.bounds, this.getOptions(props));
 	    }
 	  }, {
 	    key: "componentDidMount",
@@ -6555,7 +6352,7 @@
 	      }
 
 	      if (toProps.bounds !== fromProps.bounds) {
-	        this.leafletElement.setBounds(leaflet.latLngBounds(toProps.bounds));
+	        this.leafletElement.setBounds(L.latLngBounds(toProps.bounds));
 	      }
 
 	      if (toProps.opacity !== fromProps.opacity) {
@@ -6597,7 +6394,7 @@
 	      var url = props.url,
 	          params = objectWithoutProperties(props, ["url"]);
 
-	      return new leaflet.TileLayer.WMS(url, this.getOptions(params));
+	      return new L.TileLayer.WMS(url, this.getOptions(params));
 	    }
 	  }, {
 	    key: "updateLeafletElement",
@@ -6656,7 +6453,7 @@
 	  createClass(ZoomControl, [{
 	    key: "createLeafletElement",
 	    value: function createLeafletElement(props) {
-	      return new leaflet.Control.Zoom(props);
+	      return new L.Control.Zoom(props);
 	    }
 	  }]);
 
@@ -6671,7 +6468,7 @@
 	exports.AttributionControl = AttributionControl$1;
 	exports.Circle = Circle$1;
 	exports.CircleMarker = CircleMarker$1;
-	exports.Semicircle = Semicircle$2;
+	exports.Semicircle = Semicircle$1;
 	exports.DivOverlay = DivOverlay;
 	exports.FeatureGroup = FeatureGroup$1;
 	exports.GeoJSON = GeoJSON$1;
