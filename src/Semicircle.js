@@ -1,6 +1,6 @@
 // @flow
 
-import { Semicircle as LeafletSemicircle } from 'leaflet-semicircle'
+import * as LeafletSemicircle from 'leaflet-semicircle'
 
 import { withLeaflet } from './context'
 import Path from './Path'
