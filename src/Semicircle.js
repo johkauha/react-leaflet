@@ -6,7 +6,7 @@ import { withLeaflet } from './context'
 import Path from './Path'
 import type { LatLng, MapLayerProps, PathOptions } from './types'
 
-require('leaflet-semicircle');
+import * as LeafletSemicircle from 'leaflet-semicircle'
 
 type LeafletElement = LeafletSemicircle
 type Props = {
